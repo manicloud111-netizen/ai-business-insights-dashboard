@@ -8,6 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from psycopg2 import errors
 import os
 import secrets
+print("********** VERSION JULY-06-2026 **********")
 
 # JWT imports
 from flask_jwt_extended import (
@@ -21,12 +22,12 @@ CORS(app)
 # ---------------- HOME ----------------
 
 @app.route("/", methods=["GET"])
+@app.route("/")
 def home():
     return jsonify({
-        "status": "success",
-        "message": "AI Business Insights Dashboard API is running",
-        "version": "1.0.0"
-    }), 200
+        "message": "NEW VERSION DEPLOYED",
+        "version": "July-06-2026"
+    })
 
 
 @app.route("/health", methods=["GET"])
@@ -56,20 +57,19 @@ jwt = JWTManager(app)
 def get_db_connection():
     db_url = os.getenv("DATABASE_URL")
     if db_url:
-    if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
 
-    return psycopg2.connect(db_url)
-    else:
-        # Fallback for local development
-        
-        return psycopg2.connect(
-            dbname="founding_mvp",
-            user="postgres",
-            password="Francisca2026!",
-            host="localhost",
-            port="5432"
-        )
+        return psycopg2.connect(db_url)
+
+    # Fallback for local development
+    return psycopg2.connect(
+        dbname="founding_mvp",
+        user="postgres",
+        password="Francisca2026!",
+        host="localhost",
+        port="5432"
+    )
 # ---------------- AUTH ROUTES ----------------
 @app.route('/register', methods=['POST'])
 def register():
