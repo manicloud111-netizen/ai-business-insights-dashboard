@@ -72,6 +72,12 @@ def get_db_connection():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
+    if not data:
+        return jsonify({"error": "Request body must be JSON"}), 400
+    required = ["name", "email", "password"]
+    for field in required:
+        if field not in data:
+            return jsonify({"error": f"{field} is required"}), 400
     hashed_pw = generate_password_hash(data['password'])
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -92,6 +98,10 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
+    if not data:
+        return jsonify({"error": "Request body must be JSON"}), 400
+    if "email" not in data or "password" not in data:
+        return jsonify({"error": "Email and password are required"}), 400
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id, password_hash FROM users WHERE email=%s", (data['email'],))
