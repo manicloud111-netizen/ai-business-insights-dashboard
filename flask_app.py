@@ -22,8 +22,11 @@ CORS(app)
 # ---------------- HOME ----------------
 
 @app.route("/", methods=["GET"])
-@app.route("/")
 def home():
+    return jsonify({
+        "message": "NEW VERSION DEPLOYED",
+        "version": "July-06-2026"
+    }), 200
     return jsonify({
         "message": "NEW VERSION DEPLOYED",
         "version": "July-06-2026"
@@ -264,9 +267,6 @@ def get_alerts():
     user_id = get_jwt_identity()
     conn = get_db_connection()
     cur = conn.cursor()
-
-    cur = conn.cursor()
-
     cur.execute("SELECT type, amount FROM entries WHERE user_id = %s", (user_id,))
     entries = cur.fetchall()
 
