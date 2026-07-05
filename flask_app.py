@@ -16,6 +16,12 @@ from flask_jwt_extended import (
 )
 
 app = Flask(__name__)
+@app.route("/", methods=["GET"])
+def home():
+    return {
+        "status": "success",
+        "message": "AI Business Insights Dashboard API is running"
+    }, 200
 CORS(app)
 
 # --- JWT Config ---
