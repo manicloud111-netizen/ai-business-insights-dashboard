@@ -16,28 +16,51 @@ from flask_jwt_extended import (
 )
 
 app = Flask(__name__)
-@app.route("/", methods=["GET"])
-def home():
-    return {
-        "status": "success",
-        "message": "AI Business Insights Dashboard API is running"
-    }, 200
 CORS(app)
 
-# --- JWT Config ---
-# Use a strong secret key (at least 32 characters)
-# In production, load this from environment variables
-app.config["JWT_SECRET_KEY"] = secrets.token_hex(32)
+# ---------------- HOME ----------------
+
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({
+        "status": "success",
+        "message": "AI Business Insights Dashboard API is running",
+        "version": "1.0.0"
+    }), 200
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({
+        "status": "healthy"
+    }), 200
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "error": "Route not found"
+    }), 404
+
+
+# ---------------- JWT ----------------
+
+app.config["JWT_SECRET_KEY"] = os.getenv(
+    "JWT_SECRET_KEY",
+    secrets.token_hex(32)
+)
+
 jwt = JWTManager(app)
 
 # --- Database connection helper ---
 def get_db_connection():
-    db_url = os.environ.get("DATABASE_URL")
+    db_url = os.getenv("DATABASE_URL")
     if db_url:
         # Use Render’s hosted database
         return psycopg2.connect(db_url)
     else:
         # Fallback for local development
+        
         return psycopg2.connect(
             dbname="founding_mvp",
             user="postgres",
@@ -134,6 +157,7 @@ def upload_file():
         return jsonify({"error": "No selected file"}), 400
 
     # Save file locally (or to cloud storage)
+    os.makedirs("uploads", exist_ok=True)
     filepath = os.path.join("uploads", file.filename)
     file.save(filepath)
 
@@ -146,6 +170,7 @@ def upload_file():
         (user_id, file.filename, filepath),
     )
     conn.commit()
+    cur.close()
     conn.close()
 
     return jsonify({"message": "File uploaded successfully", "filename": file.filename}), 201
@@ -255,9 +280,8 @@ def get_alerts():
 
 
 # ---------------- MAIN ----------------
+print("DATABASE_URL configured:", bool(os.getenv("DATABASE_URL")))
+print("Registered Routes:")
+print(app.url_map)
 if __name__ == "__main__":
-    app.run(debug=True)
-
-    print(app.url_map)
-
-print("DATABASE_URL:", os.environ.get("DATABASE_URL"))
+    app.run(host="0.0.0.0", port=5000, debug=True)
