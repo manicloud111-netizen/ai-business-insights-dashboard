@@ -56,8 +56,10 @@ jwt = JWTManager(app)
 def get_db_connection():
     db_url = os.getenv("DATABASE_URL")
     if db_url:
-        # Use Render’s hosted database
-        return psycopg2.connect(db_url)
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+    return psycopg2.connect(db_url)
     else:
         # Fallback for local development
         
@@ -263,8 +265,12 @@ def get_alerts():
     conn = get_db_connection()
     cur = conn.cursor()
 
+    cur = conn.cursor()
+
     cur.execute("SELECT type, amount FROM entries WHERE user_id = %s", (user_id,))
     entries = cur.fetchall()
+
+    cur.close()
     conn.close()
 
     income = sum(float(e[1]) for e in entries if e[0] == 'income')
